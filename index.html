@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a16">
+<title>NEONSWARM</title>
+<meta name="description" content="Neon bullet-heaven roguelite. You move — weapons auto-fire. Survive the swarm, kill OMEGA PROTOCOL, or fall into the ENDLESS ABYSS.">
+
+<!-- tab icon + Android/ iOS install icons -->
+<link rel="icon" href="favicon.ico" sizes="48x48">
+<link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="favicon-16.png" type="image/png" sizes="16x16">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+
+<!-- link preview card (LinkedIn / Discord / chat apps) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="NEONSWARM — neon bullet-heaven roguelite">
+<meta property="og:description" content="You move — weapons auto-fire. Survive 30:00, kill OMEGA PROTOCOL, or fall into the ENDLESS ABYSS. 30 weapons, 40 passives, zero downloads.">
+<meta property="og:image" content="og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="NEONSWARM — neon bullet-heaven roguelite">
+<meta name="twitter:description" content="You move — weapons auto-fire. Survive 30:00, kill OMEGA PROTOCOL, or fall into the ENDLESS ABYSS.">
+<meta name="twitter:image" content="og-image.png">
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <div id="game-wrap">
+    <canvas id="game" width="448" height="252"></canvas>
+
+    <!-- HUD -->
+    <div id="hud" class="overlay" style="display:none">
+      <div class="hud-top">
+        <div class="hud-chip" id="hud-time">0:00</div>
+        <div class="hud-chip" id="hud-kills">☠ 0</div>
+        <div class="hud-chip" id="hud-level">LV 1</div>
+      </div>
+      <div class="hud-hp">
+        <div id="hp-fill"></div>
+        <span id="hp-text">100/100</span>
+      </div>
+      <div id="hud-combo" class="hud-combo">x5 COMBO</div>
+      <div id="loadout" class="loadout">
+        <div id="loadout-weapons" class="lo-row"></div>
+        <div id="loadout-passives" class="lo-row dim"></div>
+      </div>
+      <button id="btn-touch-pause" class="touch-pause">❚❚</button>
+    </div>
+
+    <!-- touch layer -->
+    <div id="touch-ui">
+      <div id="joy-rest" class="joy-rest">
+        <div class="joy-ring"></div>
+        <div class="joy-dot"></div>
+      </div>
+      <button id="btn-m-pause" class="m-btn m-pause">❚❚</button>
+    </div>
+
+    <!-- Main menu -->
+    <div id="menu" class="overlay menu-screen" style="display:none">
+      <div class="menu-inner">
+        <h1 class="ns-title">NEON<span>SWARM</span></h1>
+        <div class="ns-sub">SURVIVE THE SWARM · 15:00 TO OMEGA</div>
+        <div id="best-line" class="best-line"></div>
+        <div class="menu-buttons">
+          <button id="btn-play" class="ns-btn primary big">▶ PLAY</button>
+          <button id="btn-endless" class="ns-btn abyss">∞ ENDLESS ABYSS</button>
+          <button id="btn-stats" class="ns-btn">STATS</button>
+          <button id="btn-settings" class="ns-btn">SETTINGS</button>
+          <a id="btn-portfolio" class="ns-btn gold" href="https://veillemm.netlify.app/" target="_blank" rel="noopener">🌐 PORTFOLIO</a>
+        </div>
+        <div class="menu-hint" id="menu-hint">WASD / joystick to move — weapons fire automatically</div>
+      </div>
+    </div>
+
+    <!-- Character select -->
+    <div id="charscreen" class="overlay menu-screen" style="display:none">
+      <div class="menu-inner wide">
+        <h2 class="ns-title small">SELECT PILOT</h2>
+        <div id="char-grid" class="char-grid"></div>
+        <div class="menu-buttons">
+          <button id="btn-char-go" class="ns-btn primary big">▶ LAUNCH</button>
+          <button id="btn-char-back" class="ns-btn">BACK</button>
+        </div>
+        <div class="menu-hint">Each pilot starts with a different weapon + innate quirk</div>
+      </div>
+    </div>
+
+    <!-- Level-up draft -->
+    <div id="draft" class="overlay menu-screen" style="display:none">
+      <div class="draft-inner">
+        <div id="draft-title" class="draft-title">⬆ LEVEL UP — CHOOSE ONE</div>
+        <div id="draft-choices" class="draft-choices"></div>
+      </div>
+    </div>
+
+    <!-- Pause -->
+    <div id="pause" class="overlay menu-screen" style="display:none">
+      <div class="menu-inner">
+        <h2 class="ns-title small">PAUSED</h2>
+        <div class="menu-buttons">
+          <button id="btn-resume" class="ns-btn primary">RESUME</button>
+          <button id="btn-pause-settings" class="ns-btn">SETTINGS</button>
+          <button id="btn-quit" class="ns-btn danger">END RUN</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game over / victory -->
+    <div id="gameover" class="overlay menu-screen" style="display:none">
+      <div class="menu-inner">
+        <h2 id="over-title" class="ns-title small">YOU DIED</h2>
+        <div id="over-stats" class="over-stats"></div>
+        <div class="menu-buttons">
+          <button id="btn-again" class="ns-btn primary">↻ RUN IT AGAIN</button>
+          <button id="btn-abyss-again" class="ns-btn abyss">∞ TRY THE ABYSS</button>
+          <a id="btn-over-portfolio" class="ns-btn gold" href="https://veillemm.netlify.app/" target="_blank" rel="noopener">🌐 PORTFOLIO</a>
+          <button id="btn-over-menu" class="ns-btn">MAIN MENU</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div id="stats-screen" class="overlay menu-screen" style="display:none">
+      <div class="menu-inner">
+        <h2 class="ns-title small">LIFETIME STATS</h2>
+        <div id="stats-body" class="over-stats"></div>
+        <div class="menu-buttons">
+          <button id="btn-stats-back" class="ns-btn">BACK</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <div id="settings-screen" class="overlay menu-screen" style="display:none">
+      <div class="menu-inner">
+        <h2 class="ns-title small">SETTINGS</h2>
+        <div id="settings-body" class="over-stats"></div>
+        <div class="menu-buttons">
+          <button id="btn-set-back" class="ns-btn">BACK</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toasts" class="toasts"></div>
+  </div>
+</div>
+
+<script>/* haptic guard: vibrate() missing on some browsers must never crash a frame */
+if (!navigator.vibrate) navigator.vibrate = function () {};</script>
+<script src="js/core.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/characters.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/input.js"></script>
+<script src="js/save.js"></script>
+<script src="js/player.js"></script>
+<script src="js/weapons.js"></script>
+<script src="js/enemies.js"></script>
+<script src="js/bosses.js"></script>
+<script src="js/pickups.js"></script>
+<script src="js/upgrades.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/game.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
